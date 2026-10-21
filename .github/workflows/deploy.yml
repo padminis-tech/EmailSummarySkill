@@ -52,8 +52,10 @@ jobs:
           echo "=== PODS ==="
           kubectl get pods -n default
           echo "=== LOGS ==="
-          kubectl logs -l app=email-summary-mcp-server -n default
+          kubectl logs -l app=email-summary-mcp-server -n default --ignore-errors || true
           echo "=== ENDPOINTS ==="
           kubectl get endpoints email-summary-mcp-server -n default
           echo "=== SERVICE ==="
           kubectl get service email-summary-mcp-server -n default -o yaml
+          echo "=== APIRULE ==="
+          kubectl get apirule email-summary-mcp-server -n default -o yaml
