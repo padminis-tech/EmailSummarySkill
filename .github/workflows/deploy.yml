@@ -32,31 +32,31 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v4
 
-      - name: Deploy to Kyma
+            - name: Deploy to Kyma
+        env:
+          CA_DATA: ${{ secrets.CA_DATA }}
+          SA_TOKEN: ${{ secrets.SA_TOKEN }}
         run: |
-          cat > kubeconfig.yaml << 'EOF'
-          apiVersion: v1
-          kind: Config
-          clusters:
-          - cluster:
-              server: https://api.c-55cc5d0.stage.kyma.ondemand.com
-              certificate-authority-data: PLACEHOLDER_CA
-            name: kyma-cluster
-          contexts:
-          - context:
-              cluster: kyma-cluster
-              user: github-actions-sa
-            name: kyma-context
-          current-context: kyma-context
-          users:
-          - name: github-actions-sa
-            user:
-              token: PLACEHOLDER_TOKEN
-          EOF
-          sed -i "s|PLACEHOLDER_CA|${{ secrets.CA_DATA }}|g" kubeconfig.yaml
-          sed -i "s|PLACEHOLDER_TOKEN|${{ secrets.SA_TOKEN }}|g" kubeconfig.yaml
+          cat > kubeconfig.yaml <<EOF
+apiVersion: v1
+kind: Config
+clusters:
+- cluster:
+    server: https://api.c-55cc5d0.stage.kyma.ondemand.com
+    certificate-authority-data: $CA_DATA
+  name: kyma-cluster
+contexts:
+- context:
+    cluster: kyma-cluster
+    user: github-actions-sa
+  name: kyma-context
+current-context: kyma-context
+users:
+- name: github-actions-sa
+  user:
+    token: $SA_TOKEN
+EOF
           export KUBECONFIG=kubeconfig.yaml
           kubectl label namespace default istio-injection=enabled --overwrite
-          kubectl apply -f k8s/deployment.yaml           # ← removed --validate=false
+          kubectl apply -f k8s/deployment.yaml
           kubectl rollout restart deployment/email-summary-mcp-server -n default
-          # ← removed kubectl delete apirule line
