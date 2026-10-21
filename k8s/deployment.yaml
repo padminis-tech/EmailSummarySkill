@@ -42,14 +42,17 @@ metadata:
 spec:
   hosts:
   - email-summary-mcp-server.c-55cc5d0.stage.kyma.ondemand.com
-  service:
-    name: email-summary-mcp-server
-    port: 3000
-  gateway: kyma-system/kyma-gateway
-  rules:
-  - path: /*
-    methods:
-    - GET
-    - POST
-    - OPTIONS
-    noAuth: true
+  apiVersion: v1
+kind: Service
+metadata:
+  name: email-summary-mcp-server
+  namespace: default
+  labels:
+    app: email-summary-mcp-server
+spec:
+  selector:
+    app: email-summary-mcp-server
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
