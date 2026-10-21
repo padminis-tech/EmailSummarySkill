@@ -32,7 +32,7 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v4
 
-            - name: Deploy to Kyma
+      - name: Deploy to Kyma
         env:
           CA_DATA: ${{ secrets.CA_DATA }}
           SA_TOKEN: ${{ secrets.SA_TOKEN }}
@@ -55,7 +55,7 @@ users:
 - name: github-actions-sa
   user:
     token: $SA_TOKEN
-EOF
+    EOF
           export KUBECONFIG=kubeconfig.yaml
           kubectl label namespace default istio-injection=enabled --overwrite
           kubectl apply -f k8s/deployment.yaml
