@@ -16,7 +16,7 @@ function loadSkill() {
     const content = readFileSync(skillPath, 'utf-8');
     const frontmatter = content.match(/^---\n([\s\S]*?)\n---/);
     let version = '1.0.0';
-    let name = 'ariba-crd-chargeability';
+    let name = 'ariba-skill-chargeability';
     if (frontmatter) {
       const versionMatch = frontmatter[1].match(/version:\s*(.+)/);
       const nameMatch = frontmatter[1].match(/name:\s*(.+)/);
