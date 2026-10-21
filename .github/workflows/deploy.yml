@@ -42,3 +42,18 @@ jobs:
           kubectl label namespace default istio-injection=enabled --overwrite
           kubectl apply -f k8s/deployment.yaml
           kubectl rollout restart deployment/email-summary-mcp-server -n default
+      - name: Debug
+        env:
+          CA_DATA: ${{ secrets.CA_DATA }}
+          SA_TOKEN: ${{ secrets.SA_TOKEN }}
+        run: |
+          python3 -c "import os; ca=os.environ['CA_DATA']; tok=os.environ['SA_TOKEN']; open('kubeconfig.yaml','w').write(f'apiVersion: v1\nkind: Config\nclusters:\n- cluster:\n    server: https://api.c-55cc5d0.stage.kyma.ondemand.com\n    certificate-authority-data: {ca}\n  name: kyma-cluster\ncontexts:\n- context:\n    cluster: kyma-cluster\n    user: github-actions-sa\n  name: kyma-context\ncurrent-context: kyma-context\nusers:\n- name: github-actions-sa\n  user:\n    token: {tok}\n')"
+          export KUBECONFIG=kubeconfig.yaml
+          echo "=== PODS ==="
+          kubectl get pods -n default
+          echo "=== LOGS ==="
+          kubectl logs -l app=email-summary-mcp-server -n default
+          echo "=== ENDPOINTS ==="
+          kubectl get endpoints email-summary-mcp-server -n default
+          echo "=== SERVICE ==="
+          kubectl get service email-summary-mcp-server -n default -o yaml
