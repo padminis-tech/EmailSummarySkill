@@ -12,11 +12,11 @@ const PORT = process.env.PORT || 3000;
 
 function loadSkill() {
   try {
-    const skillPath = join(__dirname, 'SKILL.md');
+    const skillPath = join(__dirname, '../SKILL.md');
     const content = readFileSync(skillPath, 'utf-8');
     const frontmatter = content.match(/^---\n([\s\S]*?)\n---/);
     let version = '1.0.0';
-    let name = 'ariba-skill-chargeability';
+    let name = 'email-summary';
     if (frontmatter) {
       const versionMatch = frontmatter[1].match(/version:\s*(.+)/);
       const nameMatch = frontmatter[1].match(/name:\s*(.+)/);
@@ -29,15 +29,18 @@ function loadSkill() {
   }
 }
 
+// Load once at startup — serve from memory
+const SKILL = loadSkill();
+
 const server = new McpServer({ name: 'email-summary-mcp-server', version: '1.0.0' });
 
 server.tool(
-  'get-email_summary_skill',
-  'Returns the get_email_summary_skills',
+  'get_email_summary_skill',           // ← fixed: all underscores
+  'Returns the email summary skill instructions for generating a structured inbox digest',
   {},
   async () => {
-    const skill = loadSkill();
-    return { content: [{ type: 'text', text: skill.content }] };
+    if (SKILL.error) throw new Error(`Skill unavailable: ${SKILL.message}`);
+    return { content: [{ type: 'text', text: SKILL.content }] };
   }
 );
 
@@ -48,12 +51,14 @@ app.post('/mcp', async (req, res) => {
   await transport.handleRequest(req, res, req.body);
 });
 
+app.get('/mcp', (req, res) => {
+  res.status(405).json({ error: 'Method Not Allowed. Use POST.' });
+});
+
 app.get('/health', (req, res) => {
-  const skill = loadSkill();
-  res.json({ status: 'ok', skill: skill.name, version: skill.version });
+  res.json({ status: 'ok', skill: SKILL.name, version: SKILL.version });
 });
 
 app.listen(PORT, () => {
-  const skill = loadSkill();
-  console.log(`MCP Server running on port ${PORT} | Skill: ${skill.name} v${skill.version}`);
+  console.log(`MCP Server running on port ${PORT} | Skill: ${SKILL.name} v${SKILL.version}`);
 });
