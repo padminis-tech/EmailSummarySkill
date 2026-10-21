@@ -33,29 +33,8 @@ jobs:
         uses: azure/setup-kubectl@v4
 
       - name: Deploy to Kyma
-        env:
-          CA_DATA: ${{ secrets.CA_DATA }}
-          SA_TOKEN: ${{ secrets.SA_TOKEN }}
         run: |
-          cat > kubeconfig.yaml <<EOF
-apiVersion: v1
-kind: Config
-clusters:
-- cluster:
-    server: https://api.c-55cc5d0.stage.kyma.ondemand.com
-    certificate-authority-data: $CA_DATA
-  name: kyma-cluster
-contexts:
-- context:
-    cluster: kyma-cluster
-    user: github-actions-sa
-  name: kyma-context
-current-context: kyma-context
-users:
-- name: github-actions-sa
-  user:
-    token: $SA_TOKEN
-    EOF
+          echo "${{ secrets.KYMA_KUBECONFIG }}" > kubeconfig.yaml
           export KUBECONFIG=kubeconfig.yaml
           kubectl label namespace default istio-injection=enabled --overwrite
           kubectl apply -f k8s/deployment.yaml
